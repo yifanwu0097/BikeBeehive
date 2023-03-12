@@ -39,5 +39,5 @@ def weatherScrapper():
     cursor.execute(dublinweathersql)
     connection.commit()
 
-    # now sleep for 1 hour
-    time.sleep(5 * 60)
+    # use cron for keeping running
+    # time.sleep(5 * 60)
