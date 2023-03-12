@@ -50,5 +50,5 @@ def stationScrapper():
         cursor.execute(stationavailabilitysql)
 
         connection.commit()
-    # now sleep for 5 minutes
-    time.sleep(5 * 60)
+    # use cron for keeping running
+    # time.sleep(5 * 60)
