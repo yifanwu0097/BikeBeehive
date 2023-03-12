@@ -40,4 +40,4 @@ def weatherScrapper():
     connection.commit()
 
     # now sleep for 1 hour
-    time.sleep(30 * 60)
+    time.sleep(5 * 60)
