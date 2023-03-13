@@ -1,7 +1,7 @@
 import requests
 import json
 import time
-import datetime
+import datetime as dt
 import pymysql.cursors
 from createdbtable import cursor, connection
 
@@ -10,11 +10,10 @@ JCKEY = "3963133e057b9124ba668c500c291bb165933b46"
 NAME = "dublin"
 STATIONS_URI = "https://api.jcdecaux.com/vls/v1/stations?"
 
-
 def stationScrapper():
     # Station and Availability
     # Get the stations dynamic data and load into json
-    now = datetime.datetime.now()
+    now = dt.datetime.now()
     r_sa = requests.get(STATIONS_URI, params={"apiKey": JCKEY, "contract": NAME})
     stations = json.loads(r_sa.text)
 
@@ -40,15 +39,15 @@ def stationScrapper():
         avab = (int(station.get('number')),
                 int(station.get('available_bikes')),
                 int(station.get('available_bike_stands')),
-                int(station.get('last_update')))
+                dt.datetime.fromtimestamp(int(station.get('last_update')/1e3)))
 
         # Populate station and availability data into database
         stationinfosql = """INSERT INTO db_bikes.station_info VALUES("%s","%s",%i,%i,"%s","%s",%i,%f,%f,"%s");""" % vals
         cursor.execute(stationinfosql)
 
-        stationavailabilitysql = """INSERT INTO db_bikes.station_availability VALUES(%i, %i, %i, %i);""" % avab
+        stationavailabilitysql = """INSERT INTO db_bikes.station_availability VALUES(%i, %i, %i, "%s");""" % avab
         cursor.execute(stationavailabilitysql)
 
         connection.commit()
     # use cron for keeping running
-    # time.sleep(5 * 60)
+    time.sleep(5 * 60)
