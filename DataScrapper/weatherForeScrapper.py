@@ -2,6 +2,7 @@ import requests
 import json
 import pymysql.cursors
 from createdbtable import cursor, connection
+import datetime as dt
 
 # Weather API keys
 WEATHER_APIKEY = "f0d90ef7fcc8781efadf746287963079"
@@ -22,7 +23,7 @@ def weatherForeScrapper():
     f_w = json.loads(r_wf.text)
     cwfvals = (float(f_w["lat"]),
                float(f_w["lon"]),
-               f_w["hourly"][0]["dt"],
+               dt.datetime.fromtimestamp(f_w["hourly"][0]["dt"]),
                float(f_w["hourly"][0]["temp"]),
                float(f_w["hourly"][0]["feels_like"]),
                int(f_w["hourly"][0]["pressure"]),
@@ -37,8 +38,8 @@ def weatherForeScrapper():
                f_w["hourly"][0]["weather"][0]["description"],
                float(f_w["hourly"][0]["pop"]),
                f_w["daily"][0]["dt"],
-               int(f_w["daily"][0]["sunrise"]),
-               int(f_w["daily"][0]["sunset"]),
+               dt.datetime.fromtimestamp(int(f_w["daily"][0]["sunrise"])),
+               dt.datetime.fromtimestamp(int(f_w["daily"][0]["sunset"])),
                float(f_w["daily"][0]["temp"]["min"]),
                float(f_w["daily"][0]["temp"]["max"]),
                int(f_w["daily"][0]["pressure"]),
@@ -55,6 +56,6 @@ def weatherForeScrapper():
 
     # Populate weather forecast data into database
     weatherforecastsql = """INSERT INTO db_bikes.future_weather_forecast 
-                            VALUES(%f,%f,"%s",%f,%f,%i,%i,%f,%f,%i,%i,%f,%i,%f,"%s",%f,"%s",%i,%i,%f,%f,%i,%i,%f,%f,%i,%f,"%s",%i,%f,%f);"""% cwfvals
+                            VALUES(%f,%f,"%s",%f,%f,%i,%i,%f,%f,%i,%i,%f,%i,%f,"%s",%f,"%s","%s","%s",%f,%f,%i,%i,%f,%f,%i,%f,"%s",%i,%f,%f);"""% cwfvals
     cursor.execute(weatherforecastsql)
     connection.commit()
