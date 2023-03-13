@@ -1,8 +1,6 @@
 import json
-#import sqlalchemy as sqla
 import pymysql.cursors
 from createdbtable import cursor, connection
-
 
 def staticStation():
     # STATIC DATA
