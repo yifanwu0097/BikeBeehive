@@ -3,6 +3,7 @@ import json
 import time
 import pymysql.cursors
 from createdbtable import cursor, connection
+import datetime as dt
 
 # Weather API keys
 WEATHER_APIKEY = "f0d90ef7fcc8781efadf746287963079"
@@ -17,9 +18,9 @@ def weatherScrapper():
     c_w = json.loads(r_w.text)
 
     # Populate json weather data into database
-    cwvals = (int(c_w['current']['dt']),
-              c_w["current"]["sunrise"],
-              c_w["current"]["sunset"],
+    cwvals = (dt.datetime.fromtimestamp(int(c_w['current']['dt'])),
+              dt.datetime.fromtimestamp(c_w["current"]["sunrise"]),
+              dt.datetime.fromtimestamp(c_w["current"]["sunset"]),
               float(c_w["current"]["temp"]),
               float(c_w["current"]["feels_like"]),
               int(c_w["current"]["pressure"]),
@@ -34,10 +35,10 @@ def weatherScrapper():
               float(c_w["daily"][0]["temp"]["max"]))
 
     # Populate weather data into database
-    dublinweathersql = """INSERT INTO db_bikes.dublin_weather VALUES(%i,"%s","%s",%f,%f,%i,%i,%f,%i,%i,%f,%i,"%s",%f,%f);""" % cwvals
+    dublinweathersql = """INSERT INTO db_bikes.dublin_weather VALUES("%s","%s","%s",%f,%f,%i,%i,%f,%i,%i,%f,%i,"%s",%f,%f);""" % cwvals
     
     cursor.execute(dublinweathersql)
     connection.commit()
 
     # use cron for keeping running
-    # time.sleep(5 * 60)
+    time.sleep(5 * 60)
