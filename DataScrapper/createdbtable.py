@@ -1,4 +1,3 @@
-#import sqlalchemy as sqla
 import pymysql.cursors
 
 URI = "database-test1.ckvmcnbipeqn.eu-west-1.rds.amazonaws.com"
@@ -60,16 +59,16 @@ CREATE TABLE IF NOT EXISTS db_bikes.station_availability(
 number INTEGER,
 available_bikes INTEGER,
 available_bike_stands INTEGER,
-last_update INTEGER)
+last_update DateTime)
 """
 createtable(createavtsql)
 
 # Create table weather containing weather information now
 createwthsql = """
 CREATE TABLE IF NOT EXISTS db_bikes.dublin_weather(
-dt INTEGER(255),
-sunrise VARCHAR(255),
-sunset VARCHAR(255),
+dt DateTime,
+sunrise DateTime,
+sunset DateTime,
 temp DOUBLE,
 feels_like DOUBLE,
 pressure INTEGER,
@@ -90,7 +89,7 @@ createfwthsql = """
     CREATE TABLE IF NOT EXISTS db_bikes.future_weather_forecast(
     lat DOUBLE,
     lon DOUBLE,
-    hourly_dt VARCHAR(255),
+    hourly_dt DateTime,
     hourly_temp DOUBLE,
     hourly_feels_like DOUBLE,
     hourly_pressure INTEGER,
@@ -105,8 +104,8 @@ createfwthsql = """
     hourly_weather_description VARCHAR(255),
     hourly_pop DOUBLE,
     daily_dt VARCHAR(255),
-    daily_sunrise INTEGER,
-    daily_sunset INTEGER,
+    daily_sunrise DateTime,
+    daily_sunset DateTime,
     daily_temp_min DOUBLE,
     daily_temp_max DOUBLE,
     daily_pressure INTEGER,
