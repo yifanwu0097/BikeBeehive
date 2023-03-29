@@ -1,0 +1,159 @@
+/* 顶部 */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 20px;
+    background-color: #f8f8f8;
+  }
+  
+  header h1 {
+    font-size: 36px;
+    margin: 0;
+  }
+  
+  #weather {
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+  }
+  
+  #weather-icon {
+    font-size: 32px;
+    margin-right: 10px;
+  }
+  
+  header a {
+    font-size: 18px;
+    text-decoration: none;
+    color: #333;
+    margin-left: 20px;
+  }
+  
+  /* 左侧 */
+  .left-panel {
+    width: 25%;
+    border-right: 1px solid #ccc;
+    padding: 20px;
+  }
+  
+  .left-panel h2 {
+    font-size: 24px;
+    margin: 0 0 20px;
+  }
+  
+  .left-panel label {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .left-panel input[type="text"],
+  .left-panel input[type="date"],
+  .left-panel input[type="time"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+  }
+  
+  .left-panel input[type="submit"] {
+    padding: 10px;
+    font-size: 18px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  
+  /* 右侧 */
+  #map {
+    height: 100vh;
+  }
+  
+  #station-info {
+    margin-top: 20px;
+  }
+  
+  #station-info h2 {
+    margin: 0;
+    font-size: 24px;
+  }
+  
+  #station-info p {
+    margin: 10px 0;
+    font-size: 18px;
+  }
+  
+  #chart {
+    height: 200px;
+  }
+  
+  .station-marker {
+    border-radius: 50%;
+    height: 30px;
+    width: 30px;
+    border: 3px solid #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+  }
+  
+  .station-marker.availability-0 {
+    background-color: #c0392b;
+  }
+  
+  .station-marker.availability-1 {
+    background-color: #f1c40f;
+  }
+  
+  .station-marker.availability-2 {
+    background-color: #2ecc71;
+  }
+  
+  .station-marker.availability-3 {
+    background-color: #3498db;
+  }
+  
+  .station-marker.availability-4 {
+    background-color: #8e44ad;
+  }
+  
+  .station-marker.availability-5 {
+    background-color: #1abc9c;
+  }
+  
+  .station-marker.availability-6 {
+    background-color: #d35400;
+  }
+  
+  .station-marker.availability-7 {
+    background-color: #34495e;
+  }
+  
+  .station-marker.availability-8 {
+    background-color: #f39c12;
+  }
+  
+  /* 底部 */
+  footer {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid #ccc;
+    background-color: #f8f8f8;
+    margin-top: 20px;
+  }
+  
+  footer p {
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  footer a {
+    color: #333;
+    text-decoration: none;
+  }
+  
