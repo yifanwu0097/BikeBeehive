@@ -45,7 +45,7 @@ def stationScrapper():
         stationinfosql = """INSERT INTO db_bikes.station_info VALUES("%s","%s",%i,%i,"%s","%s",%i,%f,%f,"%s");""" % vals
         cursor.execute(stationinfosql)
 
-        stationavailabilitysql = """INSERT INTO db_bikes.station_availability VALUES(%i, %i, %i, "%s");""" % avab
+        stationavailabilitysql = """INSERT INTO db_bikes.station_new_availability VALUES(%i, %i, %i, "%s");""" % avab
         cursor.execute(stationavailabilitysql)
 
         connection.commit()
