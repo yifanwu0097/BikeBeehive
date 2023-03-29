@@ -55,7 +55,7 @@ createtable(createsttsql)
 
 # Create table availability containing bikes and bike stands information
 createavtsql = """
-CREATE TABLE IF NOT EXISTS db_bikes.station_availability(
+CREATE TABLE IF NOT EXISTS db_bikes.station_new_availability(
 number INTEGER,
 available_bikes INTEGER,
 available_bike_stands INTEGER,
@@ -65,7 +65,7 @@ createtable(createavtsql)
 
 # Create table weather containing weather information now
 createwthsql = """
-CREATE TABLE IF NOT EXISTS db_bikes.dublin_weather(
+CREATE TABLE IF NOT EXISTS db_bikes.dublin_new_weather(
 dt DateTime,
 sunrise DateTime,
 sunset DateTime,
