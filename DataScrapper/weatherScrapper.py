@@ -35,7 +35,7 @@ def weatherScrapper():
               float(c_w["daily"][0]["temp"]["max"]))
 
     # Populate weather data into database
-    dublinweathersql = """INSERT INTO db_bikes.dublin_weather VALUES("%s","%s","%s",%f,%f,%i,%i,%f,%i,%i,%f,%i,"%s",%f,%f);""" % cwvals
+    dublinweathersql = """INSERT INTO db_bikes.dublin_new_weather VALUES("%s","%s","%s",%f,%f,%i,%i,%f,%i,%i,%f,%i,"%s",%f,%f);""" % cwvals
     
     cursor.execute(dublinweathersql)
     connection.commit()
