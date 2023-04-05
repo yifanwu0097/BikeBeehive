@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Station Map</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxd5Xu1D8hX1VLr4WHwOKoVqzfLZzM9Mo"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+       /* 顶部 */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 20px;
+    background-color: #f8f8f8;
+  }
+  
+  header h1 {
+    font-size: 36px;
+    margin: 0;
+  }
+  
+  #weather {
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+  }
+  
+  #weather-icon {
+    font-size: 32px;
+    margin-right: 10px;
+  }
+  
+  header a {
+    font-size: 18px;
+    text-decoration: none;
+    color: #333;
+    margin-left: 20px;
+  }
+  
+  /* 左侧 */
+  .left-panel {
+    width: 25%;
+    border-right: 1px solid #ccc;
+    padding: 20px;
+  }
+  
+  .left-panel h2 {
+    font-size: 24px;
+    margin: 0 0 20px;
+  }
+  
+  .left-panel label {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .left-panel input[type="text"],
+  .left-panel input[type="date"],
+  .left-panel input[type="time"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+  }
+  
+  .left-panel input[type="submit"] {
+    padding: 10px;
+    font-size: 18px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  
+  /* 右侧 */
+  #map {
+    height: 100vh;
+  }
+  
+  #station-info {
+    margin-top: 20px;
+  }
+  
+  #station-info h2 {
+    margin: 0;
+    font-size: 24px;
+  }
+  
+  #station-info p {
+    margin: 10px 0;
+    font-size: 18px;
+  }
+  
+  #chart {
+    height: 200px;
+  }
+  
+  .station-marker {
+    border-radius: 50%;
+    height: 30px;
+    width: 30px;
+    border: 3px solid #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+  }
+  
+  .station-marker.availability-0 {
+    background-color: #c0392b;
+  }
+  
+  .station-marker.availability-1 {
+    background-color: #f1c40f;
+  }
+  
+  .station-marker.availability-2 {
+    background-color: #2ecc71;
+  }
+  
+  .station-marker.availability-3 {
+    background-color: #3498db;
+  }
+  
+  .station-marker.availability-4 {
+    background-color: #8e44ad;
+  }
+  
+  .station-marker.availability-5 {
+    background-color: #1abc9c;
+  }
+  
+  .station-marker.availability-6 {
+    background-color: #d35400;
+  }
+  
+  .station-marker.availability-7 {
+    background-color: #34495e;
+  }
+  
+  .station-marker.availability-8 {
+    background-color: #f39c12;
+  }
+  
+  /* 底部 */
+  footer {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid #ccc;
+    background-color: #f8f8f8;
+    margin-top: 20px;
+  }
+  
+  footer p {
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  footer a {
+    color: #333;
+    text-decoration: none;
+  }
+  
+
+    </style>
+</head>
+<body>
+  <header>
+    <div class="left">
+      <div id="weather">
+        <p id="temp"></p>
+        <i id="weather-icon"></i>
+      </div>
+    </div>
+    <div class="center">
+      <h1>Dublin Bikes</h1>
+    </div>
+    <div class="right">
+      <a href="#" id="view-map">View Map</a>
+      <a href="#" id="view-stations">View Stations</a>
+    </div>
+  </header>
+  <main>
+    <div class="left-panel">
+      <h2>Plan Your Journey</h2>
+      <form>
+        <label for="start-location">Please enter your starting location:</label>
+        <input type="text" id="start-location" name="start-location">
+        <br>
+        <label for="end-location">Please enter your destination:</label>
+        <input type="text" id="end-location" name="end-location">
+        <br>
+        <label for="date">Please input the day and your wish to travel:</label>
+        <input type="date" id="date" name="date">
+        <input type="time" id="time" name="time">
+        <br>
+        <input type="submit" value="Search">
+      </form>
+    </div>
+    <div class="right-panel">
+      <div id="map"></div>
+      <div id="station-info">
+        <h2 id="station-name"></h2>
+        <p id="station-address"></p>
+        <p id="station-availability"></p>
+        <div id="chart"></div>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2023 Dublin Bike Station. All rights reserved.</p>
+  </footer>
+
+    <script>
+        let map;
+
+        // Get data from database
+        let stations = [];
+
+        // Initialize the Google Map
+        function initMap() {
+            const map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 53.349805, lng: -6.26031 },
+                zoom: 13
+            });
+
+            stations.forEach(station => {
+                const position = new google.maps.LatLng(station.latitude, station.longitude);
+                const color = station.available_bikes / (station.available_bikes + station.available_bike_stands) * 100 > 50 ? "green" : "red";
+                const marker = new google.maps.Marker({
+                    position,
+                    map,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: station.available_bikes / 2,
+                        fillColor: color,
+                        fillOpacity: 0.8,
+                        strokeColor: "white",
+                        strokeWeight: 1
+                    }
+                });
+
+                marker.addListener("click", () => {
+                    displayOccupancyAndWeather(station);
+                });
+            });
+        }
+
+        async function fetchHourlyOccupancy(station_id) {
+            const response = await fetch(`/api/hourly_occupancy?station_id=${station_id}`);
+            const data = await response.json();
+            return data;
+        }
+
+        async function fetchWeatherForecast(latitude, longitude) {
+            const response = await fetch(`/api/weather_forecast?lat=${latitude}&lon=${longitude}`);
+            const data = await response.json();
+            return data;
+        }
+
+        async function fetchHourlyOccupancy(station_id) {
+    const response = await fetch(`/api/hourly_occupancy?station_id=${station_id}`);
+    const data = await response.json();
+    return data;
+}
+
+async function displayOccupancyAndWeather(station) {
+    document.getElementById("stationName").innerHTML = station.name;
+
+    // Fetch hourly occupancy data
+    const hourlyOccupancy = await fetchHourlyOccupancy(station.number);
+
+    // Create a bar chart for detailed hourly occupancy
+    var ctx = document.getElementById("occupancyChart").getContext("2d");
+    var chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: hourlyOccupancy.map((occupancy, index) => `Hour ${index + 1}`),
+            datasets: [
+                {
+                    label: "Hourly Occupancy",
+                    data: hourlyOccupancy,
+                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Fetch and display weather forecast
+    const weatherForecastData = await fetchWeatherForecast(station.latitude, station.longitude);
+    let weatherForecastHtml = "";
+    weatherForecastData.forEach(function(forecast) {
+        weatherForecastHtml += `<p>${forecast.hourly_dt}: ${forecast.hourly_weather_description}, Temp: ${forecast.hourly_temp} °C</p >`;
+    });
+    document.getElementById("weatherForecast").innerHTML = weatherForecastHtml;
+
+    // Show the modal
+    document.getElementById("myModal").style.display = "block";
+}
+
+
+        google.maps.event.addDomListener(window, "load", initMap);
+    </script>
+</body>
+</html>
