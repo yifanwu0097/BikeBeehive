@@ -16,23 +16,13 @@
       align-items: center;
       border-bottom: 1px solid #ccc;
       padding: 10px 20px;
-      background-color: #f8f8f8;
+      background-color: #f0f0f0;
     }
 
     header h1 {
       font-size: 36px;
       margin: 0;
-    }
-
-    #weather {
-      display: flex;
-      align-items: center;
-      font-size: 24px;
-    }
-
-    #weather-icon {
-      font-size: 32px;
-      margin-right: 10px;
+      color: #333;
     }
 
     header a {
@@ -47,17 +37,25 @@
       width: 25%;
       border-right: 1px solid #ccc;
       padding: 20px;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      height: calc(100% - 60px);
+      overflow-y: auto;
+      background-color: #f0f0f0;
     }
 
     .left-panel h2 {
       font-size: 24px;
       margin: 0 0 20px;
+      color: #333;
     }
 
     .left-panel label {
       display: block;
       font-size: 18px;
       margin-bottom: 10px;
+      color: #333;
     }
 
     .left-panel input[type="text"],
@@ -80,87 +78,30 @@
     }
 
     /* 右侧 */
+    .right-panel {
+      width: 75%;
+      margin-left: 25%;
+    }
+
     #map {
       height: 100vh;
     }
 
-    #station-info {
-      margin-top: 20px;
-    }
-
-    #station-info h2 {
-      margin: 0;
-      font-size: 24px;
-    }
-
-    #station-info p {
-      margin: 10px 0;
-      font-size: 18px;
-    }
-
-    #chart {
-      height: 200px;
-    }
-
-    .station-marker {
-      border-radius: 50%;
-      height: 30px;
-      width: 30px;
-      border: 3px solid #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 18px;
-    }
-
-    .station-marker.availability-0 {
-      background-color: #c0392b;
-    }
-
-    .station-marker.availability-1 {
-      background-color: #f1c40f;
-    }
-
-    .station-marker.availability-2 {
-      background-color: #2ecc71;
-    }
-
-    .station-marker.availability-3 {
-      background-color: #3498db;
-    }
-
-    .station-marker.availability-4 {
-      background-color: #8e44ad;
-    }
-
-    .station-marker.availability-5 {
-      background-color: #1abc9c;
-    }
-
-    .station-marker.availability-6 {
-      background-color: #d35400;
-    }
-
-    .station-marker.availability-7 {
-      background-color: #34495e;
-    }
-
-    .station-marker.availability-8 {
-      background-color: #f39c12;
-    }
-
     /* 底部 */
     footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
       text-align: center;
       padding: 20px;
       border-top: 1px solid #ccc;
-      background-color: #f8f8f8;
-      margin-top: 20px;
+      background-color: #f0f0f0;
     }
 
     footer p {
       margin: 0;
       font-size: 18px;
+      color: #333;
     }
 
     footer a {
@@ -213,9 +154,11 @@
       </div>
     </div>
   </main>
+  <div style="clear: both;"></div>
   <footer>
     <p>&copy; 2023 Dublin Bike Station. All rights reserved.</p>
   </footer>
+
 
   <script>
     // Fetch stations_data from app.py
@@ -284,6 +227,16 @@
             strokeColor: "white",
             strokeWeight: 1
           }
+        });
+
+        // Create an info window
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<div>
+            <h3>${station.name}</h3>
+            <p>Available Bikes: ${station.available_bikes}</p>
+            <p>Available Stands: ${station.available_bike_stands}</p>
+            <p>Last Update: ${station.last_update}</p>
+          </div>`
         });
 
         marker.addListener("click", () => {
