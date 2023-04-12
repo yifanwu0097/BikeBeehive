@@ -8,6 +8,7 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxd5Xu1D8hX1VLr4WHwOKoVqzfLZzM9Mo"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
   <style>
     /* 顶部 */
     header {
@@ -86,6 +87,11 @@
     #map {
       height: 100vh;
     }
+    
+    .gm-style-iw {
+    height: 800px;
+    width: 700px;
+    }
 
     /* 底部 */
     footer {
@@ -150,7 +156,7 @@
         <h2 id="station-name"></h2>
         <p id="station-address"></p>
         <p id="station-availability"></p>
-        <div id="chart"></div>
+        
       </div>
     </div>
   </main>
@@ -161,6 +167,56 @@
 
 
   <script>
+    google.charts.load('current', {'packages':['corechart']});
+
+    function drawHourlyChart(station_id){
+      fetch("http://127.0.0.1:8080/hourly/"+station_id).then(response=>{
+        console.log(response);
+        return response.json();
+      }).then(data =>{
+        var charData = new google.visualization.DataTable();
+        charData.addColumn('number','Hour of Day');
+        charData.addColumn('number','Available Bikes');
+          data.forEach(hourlydata=>{
+            charData.addRow([hourlydata[2], parseFloat(hourlydata[0].toString())]);
+          });
+          var options = {
+            title: "Hourly Bike Availability",
+            hAxis: {title: 'Hour of the Day',
+                    ticks: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]},
+            vAxis: {title: 'Available Bike Number'},
+            legend: 'none',
+            width: '400'
+          };
+          var hourlyChart = new google.visualization.LineChart(document.getElementById('hourly-chart'));
+          hourlyChart.draw(charData, options);
+      }).catch(error => console.log(error));
+      }
+
+    function drawDailyChart(station_id){
+      var weekday = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      fetch("http://127.0.0.1:8080/daily/"+station_id).then(response=>{
+        console.log(response);
+        return response.json();
+      }).then(data => {
+        var charData = new google.visualization.DataTable();
+        charData.addColumn('string','Day of Week');
+        charData.addColumn('number','Available Bikes');
+          data.forEach(dailydata=>{
+            charData.addRow([weekday[dailydata[2]],parseFloat(dailydata[0].toString())]);
+          });
+          var options = {
+            title: 'Daily Bike Availability',
+            hAxis: {title: 'Day of the Week'},
+            vAxis: {title: 'Available Bike Number'},
+            legend: 'none',
+            width: '400'
+          };
+          var dailyChart = new google.visualization.LineChart(document.getElementById('daily-chart'));
+          dailyChart.draw(charData, options);
+      }).catch(error => console.log(error));
+    }
+      
     // Fetch stations_data from app.py
     fetch("http://127.0.0.1:8080/stations", { mode: 'no-cors' })
       .then(response => {
@@ -187,6 +243,7 @@
       .always(function () {
         console.log("complete");
       })
+      
 
     // window.onload = function () {
     //   initMap();
@@ -230,80 +287,25 @@
         });
 
         // Create an info window
-        const infoWindow = new google.maps.InfoWindow({
-          content: `<div>
-            <h3>${station.name}</h3>
-            <p>Available Bikes: ${station.available_bikes}</p>
-            <p>Available Stands: ${station.available_bike_stands}</p>
-            <p>Last Update: ${station.last_update}</p>
-          </div>`
-        });
+        const infoWindow = new google.maps.InfoWindow({maxWidth: 320});
 
         marker.addListener("click", () => {
-          displayOccupancyAndWeather(station);
+          const stationInfo = `
+          <p><strong>Station no. :</strong>${station.number}</p>
+          <p><strong>Station name:</strong> ${station.name}</p>
+          <p><strong>Status:</strong> ${station.status}</p>
+          <p><strong>Available bikes:</strong> ${station.available_bikes}</p>
+          <p><strong>Free stands:</strong> ${station.available_bike_stands}</p>
+          <p><strong>Credit cards accepted:</strong> ${station.banking === "True" ? "Yes" : "No"}</p>
+          <div id="hourly-chart"></div>
+          <div id="daily-chart"></div>
+          `;
+          infoWindow.setContent(stationInfo);
+          infoWindow.open(map, marker);
+          drawHourlyChart(station.number);
+          drawDailyChart(station.number);
         });
       });
-    }
-
-    async function fetchHourlyOccupancy(station_id) {
-      const response = await fetch(`/api/hourly_occupancy?station_id=${station_id}`);
-      const data = await response.json();
-      return data;
-    }
-
-    async function fetchWeatherForecast(latitude, longitude) {
-      const response = await fetch(`/api/weather_forecast?lat=${latitude}&lon=${longitude}`);
-      const data = await response.json();
-      return data;
-    }
-
-    async function fetchHourlyOccupancy(station_id) {
-      const response = await fetch(`/api/hourly_occupancy?station_id=${station_id}`);
-      const data = await response.json();
-      return data;
-    }
-
-    async function displayOccupancyAndWeather(station) {
-      document.getElementById("stationName").innerHTML = station.name;
-
-      // Fetch hourly occupancy data
-      const hourlyOccupancy = await fetchHourlyOccupancy(station.number);
-
-      // Create a bar chart for detailed hourly occupancy
-      var ctx = document.getElementById("occupancyChart").getContext("2d");
-      var chart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: hourlyOccupancy.map((occupancy, index) => `Hour ${index + 1}`),
-          datasets: [
-            {
-              label: "Hourly Occupancy",
-              data: hourlyOccupancy,
-              backgroundColor: "rgba(75, 192, 192, 0.2)",
-              borderColor: "rgba(75, 192, 192, 1)",
-              borderWidth: 1
-            }
-          ]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
-
-      // Fetch and display weather forecast
-      const weatherForecastData = await fetchWeatherForecast(station.latitude, station.longitude);
-      let weatherForecastHtml = "";
-      weatherForecastData.forEach(function (forecast) {
-        weatherForecastHtml += `<p>${forecast.hourly_dt}: ${forecast.hourly_weather_description}, Temp: ${forecast.hourly_temp} °C</p >`;
-      });
-      document.getElementById("weatherForecast").innerHTML = weatherForecastHtml;
-
-      // Show the modal
-      document.getElementById("myModal").style.display = "block";
     }
 
 

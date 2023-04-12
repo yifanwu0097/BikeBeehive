@@ -10,6 +10,7 @@ PORT = 3306
 DB = "dbbikes"
 USER = "picto"
 PASSWORD = "Comp30830"
+# conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://picto:Comp30830@database-test1.ckvmcnbipeqn.eu-west-1.rds.amazonaws.com:3306/dbbikes"
@@ -31,8 +32,7 @@ def index():
 @app.route("/stations")
 # @cache.cached()
 def stations():
-    conn = pymysql.connect(host=URI, user=USER,
-                           password=PASSWORD, port=PORT, database=DB)
+    conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
     with conn.cursor() as cursor:
         # select and show all of the stations without showing its occupancy
         # sql_static = """
@@ -41,7 +41,7 @@ def stations():
         # cursor.execute(sql_static)
 
         sql = """
-            SELECT d.number, d.name, d.address, d.position_lat, d.position_lng,a.available_bikes, a.available_bike_stands, a.last_update
+            SELECT d.number, d.name, d.address, d.position_lat, d.position_lng, d.banking, d.status, a.available_bikes, a.available_bike_stands, a.last_update
             FROM (
                 SELECT * FROM db_bikes.station_info LIMIT 114
             ) as d
@@ -55,18 +55,16 @@ def stations():
         cursor.execute(sql)
         stations_data = [dict(zip([column[0] for column in cursor.description], row))
                          for row in cursor.fetchall()]
-        print(stations_data)
     return jsonify(stations_data)
 
 
 # Display selected station's availability
 
-
+# TODO: is this route necessary?
 @app.route("/availability/<int:station_id>")
 # @cache.cached()
 def get_availability():
-    conn = pymysql.connect(host=URI, user=USER,
-                           password=PASSWORD, port=PORT, database=DB)
+    conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
     with conn.cursor() as cursor:
         sql = """
             SELECT s.name, a.last_update, a.available_bikes, a.available_bike_stands
@@ -85,48 +83,61 @@ def get_availability():
 
     return json.dumps(availability_data)
 
-
 @app.route("/hourly/<int:station_id>")
 # @cache.cached()
-def get_hourly_availability():
-    conn = pymysql.connect(host=URI, user=USER,
-                           password=PASSWORD, port=PORT, database=DB)
+def get_hourly_availability(station_id):
+    conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
     with conn.cursor() as cursor:
         sql = """
         SELECT avg(available_bikes), avg(available_bike_stands), 
         (MOD(EXTRACT(HOUR FROM last_update) + CASE WHEN last_update > '2023-03-26 01:00:00' THEN 1 ELSE 0 END, 24)) as hour
         FROM db_bikes.station_new_availability
-        WHERE number = {station_number}
+        WHERE number = {}
         GROUP BY hour
         ORDER BY hour;
-        """
+        """.format(station_id)
         cursor.execute(sql)
         hourly_availability_data = cursor.fetchall()
+    return jsonify(hourly_availability_data)
 
-    return json.dumps(hourly_availability_data)
 
 @app.route("/daily/<int:station_id>")
 # @cache.cached()
-def get_daily_availability():
-    conn = pymysql.connect(host=URI, user=USER,
-                           password=PASSWORD, port=PORT, database=DB)
+def get_daily_availability(station_id):
+    conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
     with conn.cursor() as cursor:
         sql = """
         SELECT avg(available_bikes), avg(available_bike_stands), 
         WEEKDAY(last_update) as weekday
         FROM db_bikes.station_new_availability
-        WHERE number = {station_number}
+        WHERE number = {}
         GROUP BY weekday
         ORDER BY weekday;
-        """
+        """.format(station_id)
         cursor.execute(sql)
         daily_availability_data = cursor.fetchall()
 
-    return json.dumps(daily_availability_data)
+    return jsonify(daily_availability_data)
 
 @app.route("/weather")
 # @cache.cached()
-def weather():
+def current_weather():
+    conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
+    with conn.cursor() as cursor:
+        sql = """
+        SELECT (temp - 273.15) as celsius_temp, (feels_like - 273.15) as celsius_feels_like, weather_description, (temp_min - 273.15) as celsius_temp_min, (temp_max - 273.15) as celsius_temp_max
+        FROM db_bikes.dublin_new_weather 
+        ORDER BY dt DESC
+        LIMIT 1;
+        """
+        cursor.execute(sql)
+        current_weather = cursor.fetchall()
+
+    return json.dumps(current_weather)
+
+# TODO: call weather forecast based on bike station location
+@app.route("/forecast/<int:station_id>")
+def weather_forecast():
     conn = pymysql.connect(host=URI, user=USER,
                            password=PASSWORD, port=PORT, database=DB)
     with conn.cursor() as cursor:
@@ -137,9 +148,9 @@ def weather():
         LIMIT 1;
         """
         cursor.execute(sql)
-        weather = cursor.fetchall()
+        weather_forecast = cursor.fetchall()
 
-    return json.dumps(weather)
+    return json.dumps(weather_forecast)
 
 
 if __name__ == "__main__":
