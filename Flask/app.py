@@ -132,8 +132,9 @@ def current_weather():
         """
         cursor.execute(sql)
         current_weather = cursor.fetchall()
+        print(current_weather)
 
-    return json.dumps(current_weather)
+    return jsonify(current_weather)
 
 # TODO: call weather forecast based on bike station location
 @app.route("/forecast/<int:station_id>")
