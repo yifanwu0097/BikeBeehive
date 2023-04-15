@@ -323,7 +323,7 @@
         return response.json();
       }).then(data=>{
         const currentWeather = `
-        <p>Temparature:${Math.round([0][0])}°C</p>
+        <p>Temparature:${Math.round(data[0][0])}°C</p>
         <p>Feels like:${Math.round(data[0][1])}°C</p>
         <p>${Math.round(data[0][3])}°C - ${Math.round(data[0][4])}°C</p>
         <p>${data[0][2]}</p>
