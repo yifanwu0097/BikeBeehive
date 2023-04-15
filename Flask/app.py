@@ -10,6 +10,8 @@ PORT = 3306
 DB = "dbbikes"
 USER = "picto"
 PASSWORD = "Comp30830"
+
+WEATHER_URI = "https://api.openweathermap.org/data/3.0/onecall?lat=53.3498&lon=-6.2603&exclude=minutely,alerts&appid=f0d90ef7fcc8781efadf746287963079"
 # conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
 
 app = Flask(__name__)
@@ -119,9 +121,10 @@ def get_daily_availability(station_id):
 
     return jsonify(daily_availability_data)
 
-@app.route("/weather")
+# TODO: not necessary
+@app.route("/old_weather")
 # @cache.cached()
-def current_weather():
+def old_current_weather():
     conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
     with conn.cursor() as cursor:
         sql = """
@@ -136,23 +139,25 @@ def current_weather():
 
     return jsonify(current_weather)
 
-# TODO: call weather forecast based on bike station location
-@app.route("/forecast/<int:station_id>")
-def weather_forecast():
-    conn = pymysql.connect(host=URI, user=USER,
-                           password=PASSWORD, port=PORT, database=DB)
-    with conn.cursor() as cursor:
-        sql = """
-        SELECT (temp - 273.15) as celsius_temp, (feels_like - 273.15) as celsius_feels_like, weather_description, (temp_min - 273.15) as celsius_temp_min, (temp_max - 273.15) as celsius_temp_max
-        FROM db_bikes.dublin_new_weather 
-        ORDER BY dt DESC
-        LIMIT 1;
-        """
-        cursor.execute(sql)
-        weather_forecast = cursor.fetchall()
+@app.route("/weather")
+def current_weather():
+    response = requests.get(WEATHER_URI).json()
+    current_weather = response['current']
+    return current_weather
 
-    return json.dumps(weather_forecast)
+@app.route("/forecast/daily")
+def weather_daily_forecast():
+    response = requests.get(WEATHER_URI).json()
+    hourly_forecast = response['daily']
+    print(hourly_forecast)
+    return hourly_forecast
 
+@app.route("/forecast/hourly")
+def weather_hourly_forecast():
+    response = requests.get(WEATHER_URI).json()
+    hourly_forecast = response['hourly']
+    print(hourly_forecast)
+    return hourly_forecast
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
