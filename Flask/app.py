@@ -4,6 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 import pymysql.cursors
 import requests
 import json
+import pickle
+import pandas as pd
+import datetime as dt
 
 URI = "database-test1.ckvmcnbipeqn.eu-west-1.rds.amazonaws.com"
 PORT = 3306
@@ -57,6 +60,7 @@ def stations():
         cursor.execute(sql)
         stations_data = [dict(zip([column[0] for column in cursor.description], row))
                          for row in cursor.fetchall()]
+    conn.close()
     return jsonify(stations_data)
 
 
@@ -82,7 +86,7 @@ def get_availability():
         """
         cursor.execute(sql)
         availability_data = cursor.fetchall()
-
+    conn.close()
     return json.dumps(availability_data)
 
 @app.route("/hourly/<int:station_id>")
@@ -100,6 +104,7 @@ def get_hourly_availability(station_id):
         """.format(station_id)
         cursor.execute(sql)
         hourly_availability_data = cursor.fetchall()
+    conn.close()
     return jsonify(hourly_availability_data)
 
 
@@ -118,8 +123,37 @@ def get_daily_availability(station_id):
         """.format(station_id)
         cursor.execute(sql)
         daily_availability_data = cursor.fetchall()
-
+    conn.close()
     return jsonify(daily_availability_data)
+
+# day_num starts from Mon
+@app.route("/prediction/<int:station_id>/<int:day_num>/<int:future_hour>")
+def get_prediction(station_id, day_num, future_hour):
+    weekdays = ['weekday_Monday','weekday_Tuesday','weekday_Wednesday','weekday_Thursday','weekday_Friday','weekday_Saturday','weekday_Sunday']
+    current_hour = dt.datetime.now().hour
+    if current_hour <= future_hour:
+        index = future_hour - current_hour
+    else:
+        index = 24 - current_hour + future_hour
+    with open('MachineLearning/model_{}.pkl'.format(station_id),'rb') as handle:
+        model = pickle.load(handle)
+        features = ['weekday_Monday','weekday_Tuesday','weekday_Wednesday','weekday_Thursday','weekday_Friday','weekday_Saturday','weekday_Sunday','hour','temp','clouds','wind_speed','pressure','humidity']
+        
+        hourly_forecast = weather_hourly_forecast()
+        target_forcast = hourly_forecast[index]
+        input = [0] * len(features)
+        input[features.index('hour')] = future_hour
+        input[features.index('temp')] = target_forcast['temp']
+        input[features.index('clouds')] = target_forcast['clouds']
+        input[features.index('wind_speed')] = target_forcast['wind_speed']
+        input[features.index('pressure')] = target_forcast['pressure']
+        input[features.index('humidity')] = target_forcast['humidity']
+        input[features.index(weekdays[day_num])] = 1
+        prediction = model.predict([input])
+        print(prediction)
+    return list(prediction)
+
+
 
 # TODO: not necessary
 @app.route("/old_weather")
@@ -148,9 +182,8 @@ def current_weather():
 @app.route("/forecast/daily")
 def weather_daily_forecast():
     response = requests.get(WEATHER_URI).json()
-    hourly_forecast = response['daily']
-    print(hourly_forecast)
-    return hourly_forecast
+    daily_forecast = response['daily']
+    return daily_forecast
 
 @app.route("/forecast/hourly")
 def weather_hourly_forecast():
