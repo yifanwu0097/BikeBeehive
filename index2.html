@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bike Station Map</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxd5Xu1D8hX1VLr4WHwOKoVqzfLZzM9Mo"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+      body {
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+      }
+      header {
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        border-bottom: 1px solid #ccc;
+        background-color: #f0f0f0;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        left: 0;
+      }
+      .weekly-forecast {
+        width: 100%;
+        height: 30px;
+        line-height: 30px;
+        border-bottom: 1px solid #ccc;
+        background-color: #f0f0f0;
+        box-sizing: border-box;
+        display: flex;
+        position: fixed;
+        top: 40px;
+        left: 0;
+      }
+      .weekly-forecast .left {
+        width: 400px;
+        padding: 0 20px;
+        box-sizing: border-box;
+      }
+      .weekly-forecast .right {
+        flex: 1;
+      }
+      header h1 {
+        font-size: 36px;
+        margin: 0;
+        color: #333;
+      }
+
+      header a {
+        font-size: 18px;
+        text-decoration: none;
+        color: #333;
+        margin-left: 20px;
+      }
+      /* 左侧 */
+      .left-panel {
+        width: 25%;
+        border-right: 1px solid #ccc;
+        padding: 15px 20px;
+        position: fixed;
+        top: 70px;
+        left: 0;
+        height: calc(100% - 120px);
+        overflow-y: auto;
+        background-color: #cedced;
+        box-sizing: border-box;
+      }
+      /* 站点信息 */
+      #station-info {
+        width: 25%;
+        border-right: 1px solid #ccc;
+        padding: 15px 20px;
+        position: fixed;
+        top: 70px;
+        left: 25%;
+        height: calc(100% - 120px);
+        overflow-y: auto;
+        background-color: #f0f0f0;
+        box-sizing: border-box;
+        display: none;
+      }
+
+      #station-info .close {
+        position: absolute;
+        top: 1%;
+        right: 5%;
+        color: #978787;
+        font-size: 20px;
+        cursor: pointer;
+      }
+
+      .left-panel h2 {
+        font-size: 24px;
+        margin: 0 0 20px;
+        color: #333;
+      }
+
+      .left-panel label {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 10px;
+        color: #333;
+      }
+      .left-panel input[type="text"],
+      .left-panel input[type="date"],
+      .left-panel input[type="time"] {
+        width: 90%;
+        padding: 5px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        font-size: 18px;
+        border: 1px solid #ccc;
+        color: #333;
+        font-size: 14px;
+        font-family: auto;
+      }
+      .left-panel input[type="text"]:focus,
+      .left-panel input[type="date"]:focus,
+      .left-panel input[type="time"]:focus {
+        transition: border linear 0.2s, box-shadow linear 0.5s;
+        outline: none;
+        border-color: #fff;
+        box-shadow: 0 0 8px #89b8e8;
+      }
+
+      .left-panel input[type="submit"] {
+        padding: 10px;
+        font-size: 16px;
+        background-color: #40b5e5;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+
+      main {
+        margin-top: 70px;
+        border-bottom: 1px solid #ccc;
+      }
+
+      #current-weather {
+        padding-bottom: 10px;
+      }
+
+      /* 右侧 */
+      .right-panel {
+        width: 75%;
+        margin-left: 25%;
+        height: calc(100vh - 310px);
+      }
+
+      #map {
+        height: 100%;
+      }
+
+      .gm-style-iw {
+        height: 800px;
+        width: 700px;
+      }
+      .chart-container {
+        width: 75%;
+        float: right;
+        height: 154px;
+        display: flex;
+        padding: 20px 0;
+        flex-direction: row;
+        justify-content: space-between;
+        visibility: hidden;
+      }
+      .chart-container .card {
+        flex: 1;
+        height: 100%;
+        margin-right: 20px;
+        border: 1px solid #ccc;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .chart-container .card:first-child {
+        margin-left: 20px;
+      }
+      .chart-container .card:last-child {
+        margin-right: 1px;
+      }
+
+      /* 底部 */
+      footer {
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+        border-top: 1px solid #ccc;
+        background-color: #1c2127;
+      }
+
+      footer p {
+        margin: 0;
+        font-size: 18px;
+        color: #fff;
+      }
+
+      footer a {
+        color: #333;
+        text-decoration: none;
+      }
+      .icon-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .icon-day {
+        font-size: 18px;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+
+      .icon-temp {
+        font-size: 14px;
+      }
+
+      .icon-row img {
+        width: 50px;
+        height: 50px;
+        display: inline-block;
+      }
+    </style>
+    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxd5Xu1D8hX1VLr4WHwOKoVqzfLZzM9Mo"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- <script src="https://www.gstatic.com/charts/loader.js"></script> -->
+  </head>
+  <body>
+    <header>
+      <div class="left">
+        <div id="weather"></div>
+      </div>
+      <div class="center">
+        <h1>Dublin Bikes</h1>
+      </div>
+    </header>
+    <div class="weekly-forecast">
+      <div class="left">Weekly Weather Forecast</div>
+      <div class="right">
+        天气
+        <div id="fore-weather"></div>
+      </div>
+    </div>
+    <main>
+      <div class="left-panel">
+        <form>
+          <label for="start-location"
+            >Please enter your starting location:</label
+          >
+          <input type="text" id="start-location" name="start-location" />
+          <br />
+          <label for="end-location">Please enter your destination:</label>
+          <input type="text" id="end-location" name="end-location" />
+          <br />
+          <label for="date">Departure time:</label>
+          <input type="date" id="date" name="date" />
+          <input type="time" id="time" name="time" />
+          <br />
+        </form>
+        <input type="submit" value="Search" id="search" />
+      </div>
+      <div class="right-panel">
+        <div id="map"></div>
+        <!-- 站点信息 -->
+        <div id="station-info">
+          <h2 id="station-name">Station Information</h2>
+          <span class="close">x</span>
+          <p id="station-address"></p>
+          <p id="station-availability"></p>
+          <div id="start-station-info"></div>
+          <div id="end-station-info"></div>
+        </div>
+        <!-- <div class="weather">
+          <h2>Weather Forecast</h2>
+          <div id="fore-weather"></div>
+        </div> -->
+      </div>
+    </main>
+    <!-- chart -->
+    <div class="chart-container">
+      <div class="card">
+        <div id="hourly-chart">Average Hourly Availability Chart</div>
+      </div>
+      <div class="card">
+        <div id="daily-chart">Daily Availability Chart</div>
+      </div>
+      <div class="card">
+        <div class="prediction-chart">Prediction Chart</div>
+      </div>
+    </div>
+    <div style="clear: both"></div>
+    <footer>
+      <p>&copy; 2023 Dublin Bike Station. All rights reserved.</p>
+    </footer>
+    <script>
+      $(document).ready(function () {
+        // 搜索
+        $("#search").on("click", function () {
+          $("#station-info").css("display", "block");
+        });
+        // 关闭
+        $(".close").on("click", function () {
+          $("#station-info").css("display", "none");
+        });
+      });
+      google.charts.load("current", { packages: ["corechart"] });
+      displayCurrentWeather();
+      displayForeWeather();
+      function drawHourlyChart(station_id) {
+        fetch("http://127.0.0.1:8080/hourly/" + station_id)
+          .then((response) => {
+            console.log(response);
+            return response.json();
+          })
+          .then((data) => {
+            var charData = new google.visualization.DataTable();
+            charData.addColumn("number", "Hour of Day");
+            charData.addColumn("number", "Available Bikes");
+            data.forEach((hourlydata) => {
+              charData.addRow([
+                hourlydata[2],
+                parseFloat(hourlydata[0].toString()),
+              ]);
+            });
+            var options = {
+              title: "Hourly Bike Availability",
+              hAxis: {
+                title: "Hour of the Day",
+                ticks: [
+                  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                  18, 19, 20, 21, 22, 23,
+                ],
+              },
+              vAxis: { title: "Available Bike Number" },
+              legend: "none",
+              width: "400",
+            };
+            var hourlyChart = new google.visualization.LineChart(
+              document.getElementById("hourly-chart")
+            );
+            hourlyChart.draw(charData, options);
+          })
+          .catch((error) => console.error(error));
+      }
+
+      function drawDailyChart(station_id) {
+        var weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        fetch("http://127.0.0.1:8080/daily/" + station_id)
+          .then((response) => {
+            console.log(response);
+            return response.json();
+          })
+          .then((data) => {
+            var charData = new google.visualization.DataTable();
+            charData.addColumn("string", "Day of Week");
+            charData.addColumn("number", "Available Bikes");
+            data.forEach((dailydata) => {
+              charData.addRow([
+                weekday[dailydata[2]],
+                parseFloat(dailydata[0].toString()),
+              ]);
+            });
+            var options = {
+              title: "Daily Bike Availability",
+              hAxis: { title: "Day of the Week" },
+              vAxis: { title: "Available Bike Number" },
+              legend: "none",
+              width: "400",
+            };
+            var dailyChart = new google.visualization.LineChart(
+              document.getElementById("daily-chart")
+            );
+            dailyChart.draw(charData, options);
+          })
+          .catch((error) => console.error(error));
+      }
+        
+        
+
+      // Fetch stations_data from app.py
+      fetch("http://127.0.0.1:8080/stations", { mode: "no-cors" })
+        .then((response) => {
+          console.log(response);
+          (response) => response.json();
+        })
+        .then((data) => {
+          window.stations = data;
+          console.log(stations);
+        })
+        .catch((error) => console.error(error));
+
+      // Use jQuery to get stations_data json
+      var jqxhr = $.getJSON(
+        "http://127.0.0.1:8080/stations",
+        function (stations) {
+          console.log("success one", stations);
+          initMap(stations);
+        }
+      )
+        .done(function () {
+          console.log("second success");
+        })
+        .fail(function () {
+          console.log("error");
+        })
+        .always(function () {
+          console.log("complete");
+        });
+        
+        $(document).ready(function () {
+        // 搜索
+        $("#search").on("click", function () {
+          const startLocation = $("#start-location").val();
+          const endLocation = $("#end-location").val();
+
+          // 查找最佳起点站点
+          const startStation = findBestStationWithAvailableBikes(startLocation);
+          $("#start-station-info").html(getStationInfoHTML(startStation));
+
+          // 查找最佳终点站点
+          const endStation = findBestStationWithFreeSpaces(endLocation);
+          $("#end-station-info").html(getStationInfoHTML(endStation));
+        });
+      });
+
+          function findBestStationWithAvailableBikes(location) {
+      // 根据位置查找最近的站点
+      const nearestStation = findNearestStation(location);
+
+      // 根据站点可用自行车数量排序
+      const sortedStations = sortByAvailableBikes(window.stations);
+
+      // 查找最佳站点
+      for (let i = 0; i < sortedStations.length; i++) {
+        const station = sortedStations[i];
+        if (station.number === nearestStation.number && station.available_bikes > 0) {
+          return station;
+        }
+      }
+      // 如果最近的站点没有可用自行车，则返回可用自行车数量最多的站点
+      return sortedStations[0];
+    }
+
+    function findBestStationWithAvailableSpaces(location) {
+      // 根据位置查找最近的站点
+      const nearestStation = findNearestStation(location);
+
+      // 根据站点可用车位数量排序
+      const sortedStations = sortByAvailableSpaces(window.stations);
+
+      // 查找最佳站点
+      for (let i = 0; i < sortedStations.length; i++) {
+        const station = sortedStations[i];
+        if (station.number === nearestStation.number && station.available_bike_stands > 0) {
+          return station;
+        }
+      }
+      // 如果最近的站点没有可用车位，则返回可用车位数量最多的站点
+      return sortedStations[0];
+    }
+
+    function sortByAvailableBikes(stations) {
+      // 根据站点可用自行车数量排序
+      stations.sort(function (a, b) {
+        return b.available_bikes - a.available_bikes;
+      });
+      return stations;
+    }
+
+    function sortByAvailableSpaces(stations) {
+      // 根据站点可用车位数量排序
+      stations.sort(function (a, b) {
+        return b.available_bike_stands - a.available_bike_stands;
+      });
+      return stations;
+    }
+
+      // window.onload = function () {
+      //   initMap();
+      // };
+
+      // let map;
+
+      // Get data from database
+      // let stations = [];
+
+      // Initialize the Google Map
+
+      // window.onload = function () {
+      //   initMap();
+      // };
+
+      function initMap(stations) {
+        const map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 53.349805, lng: -6.26031 },
+          zoom: 13,
+        });
+
+        Object.values(stations).forEach((station) => {
+          const color =
+            (station.available_bikes /
+              (station.available_bikes + station.available_bike_stands)) *
+              100 >
+            50
+              ? "green"
+              : "red";
+
+          // const color = "red";
+          const marker = new google.maps.Marker({
+            position: new google.maps.LatLng(
+              station.position_lat,
+              station.position_lng
+            ),
+            map: map,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: station.available_bikes / 2,
+              // scale: 8,
+              fillColor: color,
+              fillOpacity: 0.8,
+              strokeColor: "white",
+              strokeWeight: 1,
+            },
+          });
+
+          // Create an info window
+          const infoWindow = new google.maps.InfoWindow({ maxWidth: 320 });
+
+          marker.addListener("click", () => {
+            $(".chart-container").css("visibility", "visible");
+            const stationInfo = `
+                    <p><strong>Station no. :</strong>${station.number}</p>
+                    <p><strong>Station name:</strong> ${station.name}</p>
+                    <p><strong>Status:</strong> ${station.status}</p>
+                    <p><strong>Available bikes:</strong> ${
+                      station.available_bikes
+                    }</p>
+                    <p><strong>Free stands:</strong> ${
+                      station.available_bike_stands
+                    }</p>
+                    <p><strong>Credit cards accepted:</strong> ${
+                      station.banking === "True" ? "Yes" : "No"
+                    }</p>
+                    <div id="hourly-chart"></div>
+                    <div id="daily-chart"></div>
+                    `;
+            infoWindow.setContent(stationInfo);
+            infoWindow.open(map, marker);
+            drawHourlyChart(station.number);
+            drawDailyChart(station.number);
+          });
+        });
+      }
+
+      function displayCurrentWeather() {
+        fetch("/weather")
+          .then((response) => {
+            console.log(response);
+            return response.json();
+          })
+          .then((data) => {
+            const currentTemp = `
+                  <p>${Math.round(data["temp"] - 273.15)}°C</p>
+                  <img src = "${iconGenerator(data["weather"][0]["icon"])}">
+                  `;
+            const currentTempDiv = document.getElementById("weather");
+            currentTempDiv.innerHTML = currentTemp;
+          })
+          .catch((error) => console.error(error));
+      }
+
+      function displayForeWeather() {
+        fetch("/forecast/daily")
+          .then((response) => {
+            console.log(response);
+            return response.json();
+          })
+          .then((data) => {
+            let foreWeather = ` `;
+            // <p>Temparature:${Math.round(data[1]['temp']['day']-273.15)}°C</p>
+            //<img src = "${iconGenerator(data[1]['weather'][0]['icon'])}">
+            var i = 0;
+            weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            for (foreData of data) {
+              if (i == 7) {
+                break;
+              }
+              var date = new Date(foreData.dt * 1000);
+              day = weekday[date.getDay()];
+              if (i == 0) {
+                day = "Today";
+              }
+              foreWeather += `
+                    <div class="icon-row">
+                    <div class="icon-day">${day}</div>
+                    <img src="${iconGenerator(foreData["weather"][0]["icon"])}">
+                    <div class="icon-temp">${Math.round(
+                      foreData["temp"]["day"] - 273.15
+                    )}°C</div>
+                  </div>
+                    `;
+              i++;
+            }
+            const foreWeatherDiv = document.getElementById("fore-weather");
+            foreWeatherDiv.innerHTML = foreWeather;
+          })
+          .catch((error) => console.error(error));
+      }
+
+      function iconGenerator(id) {
+        return "http://openweathermap.org/img/wn/" + id + "@2x.png";
+      }
+
+      google.maps.event.addDomListener(window, "load", initMap);
+    </script>
+  </body>
+</html>
