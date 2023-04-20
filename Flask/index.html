@@ -4,261 +4,306 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bike Station Map</title>
+    <title>Dublin Bikes</title>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxd5Xu1D8hX1VLr4WHwOKoVqzfLZzM9Mo"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <style>
       body {
-        width: 100%;
-        height: 100%;
-        overflow-x: hidden;
-        margin: 0;
-        padding: 0;
-        background-color: #f0f0f0;
-      }
-  
-      header {
-        width: 100%;
-        height: 40px;
-        line-height: 40px;
-        text-align: center;
-        border-bottom: 0px;
-        background-color: #f0f0f0;
-        box-sizing: border-box;
-        position: absolute;
-        top: 0;
-        left: 0;
-      }
-  
-      #current-weather {
-        float: left;
-        padding-left: 20px;
-      }
-  
-      .center {
-        display: inline-block;
-        padding-top: 20px;
-      }
-  
-      header h1 {
-        display: inline-block;
-        font-size: 36px;
-        margin: 0;
-        color: #333;
-      }
-  
-      header a {
-        font-size: 18px;
-        text-decoration: none;
-        color: #333;
-        margin-left: 20px;
-      }
-  
-      .left-panel {
-        float: left;
-        width: 25%;
-        border-right: 1px solid #ccc;
-        padding: 15px 20px;
-        top: 70px;
-        left: 0;
-        height: calc(130vh - 120px);
-        overflow-y: auto;
-        background-color: #cedced;
-        box-sizing: border-box;
-      }
-  
-      #station-info {
-        width: 25%;
-        border-right: 1px solid #ccc;
-        padding: 15px 20px;
-        position: absolute;
-        top: 70px;
-        left: 25%;
-        height: calc(100vh - 120px);
-        overflow-y: auto;
-        background-color: #f0f0f0;
-        box-sizing: border-box;
-        display: none;
-        z-index: 2;
-      }
-  
-      #station-info .close {
-        position: absolute;
-        top: 1%;
-        right: 5%;
-        color: #978787;
-        font-size: 20px;
-        cursor: pointer;
-      }
-  
-      .left-panel h2 {
-        font-size: 24px;
-        margin: 0 0 20px;
-        color: #333;
-      }
-  
-      .left-panel label {
-        display: block;
-        font-size: 18px;
-        margin-bottom: 10px;
-        color: #333;
-      }
-  
-      .left-panel input[type="text"],
-      .left-panel input[type="date"],
-      .left-panel input[type="time"] {
-        width: 90%;
-        padding: 5px;
-        border-radius: 5px;
-        margin-bottom: 10px;
-        font-size: 18px;
-        border: 1px solid #ccc;
-        color: #333;
-        font-size: 16px;
-        font-family: auto;
-      }
-  
-      .left-panel input[type="text"]:focus,
-      .left-panel input[type="date"]:focus,
-      .left-panel input[type="time"]:focus {
-        transition: border linear 0.2s, box-shadow linear 0.5s;
-        outline: none;
-        border-color: #fff;
-        box-shadow: 0 0 8px #89b8e8;
-      }
-  
-      .left-panel input[type="submit"] {
-        padding: 10px;
-        font-size: 18px;
-        background-color: #40b5e5;
-        color: #fff;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-      }
-  
-      main {
-        margin-top: 90px;
-        border-bottom: 1px solid #ccc;
-      }
-  
-      #current-weather {
-        padding-bottom: 10px;
-      }
-  
-      /* 右侧 */
-      .right-panel {
-        width: 75%;
-        height: calc(120vh - 310px);
-        display: inline-block
-      }
-  
-      #map {
-        height: 100%;
-      }
-  
-      /* .gm-style-iw {
-        height: 800px;
-        width: 700px;
-      } */
-  
-      #clicked-name {
-        text-align: center;
-        height: 20px;
-        font-size: 16px;
-      }
-  
-      .chart-container {
-        width: 75%;
-        float: right;
-        height: 160px;
-        display: flex;
-        padding: 10px 0;
-        flex-direction: row;
-        justify-content: space-between;
-        visibility: hidden;
-        z-index: 1;
-      }
-  
-      .chart-container .card {
-        flex: 1;
-        height: 100%;
-        margin-right: 10px;
-        border: 0px;
-        padding: 0px;
-        box-sizing: border-box;
-        position: relative;
-      }
-  
-      .chart-container .card:first-child {
-        margin-left: 10px;
-      }
-  
-      .chart-container .card:last-child {
-        margin-right: 1px;
-      }
-  
-      #hourly-chart {
-        width: 100%;
-        height: 100%;
-      }
-  
-      #daily-chart {
-        width: 100%;
-        height: 100%;
-      }
-  
-      #prediction-chart {
-        width: 100%;
-        height: 100%;
-      }
-  
-  
-      /* 底部 */
-      footer {
-        bottom: 0;
-        width: 100%;
-        text-align: center;
-        padding: 10px;
-        border-top: 1px solid #ccc;
-        background-color: #1c2127;
-      }
-  
-      footer p {
-        margin: 0;
-        font-size: 18px;
-        color: #fff;
-      }
-  
-      footer a {
-        color: #333;
-        text-decoration: none;
-      }
-  
-      .icon-row {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px;
-      }
-  
-      .icon-day {
-        font-size: 18px;
-        font-weight: bold;
-        margin-right: 10px;
-      }
-  
-      .icon-temp {
-        font-size: 14px;
-      }
-  
-      .icon-row img {
-        width: 50px;
-        height: 50px;
-        display: inline-block;
-      }
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+      background-image: linear-gradient(to right top, #abb7ee, #9babe6, #8b9fde, #7b93d6, #6988ce, #5589cd, #3d8aca, #1a8ac6, #0095c2, #009eba, #30a5b0, #51aca6);
+    }
+
+    header {
+      width: 100%;
+      height: 90px;
+      line-height: 40px;
+      text-align: center;
+      border-bottom: 0px;
+      /* background-color: #cedced; */
+      box-sizing: border-box;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #current-weather {
+      float: left;
+      padding-left: 10px;
+    }
+
+    .center {
+      display: inline-block;
+      padding-top: 28px;
+    }
+
+    header h1 {
+      display: inline-block;
+      font-size: 36px;
+      margin: 0;
+      color: #333;
+    }
+
+    header a {
+      font-size: 18px;
+      text-decoration: none;
+      color: #333;
+      margin-left: 20px;
+    }
+
+    .left-panel {
+      float: left;
+      width: 25%;
+      border-right: 0px;
+      padding: 0px 20px;
+      top: 70px;
+      left: 0;
+      height: calc(130vh - 120px);
+      overflow-y: auto;
+      /* background-color: #b8c0d8; */
+      box-sizing: border-box;
+    }
+
+    #station-info {
+      width: 25%;
+      border-right: 1px solid #ccc;
+      padding: 15px 20px;
+      position: absolute;
+      top: 100px;
+      left: 25%;
+      height: calc(130vh - 120px);
+      overflow-y: auto;
+      background-color: #f0f0f0;
+      box-sizing: border-box;
+      display: none;
+      z-index: 2;
+    }
+
+    #station-info .close {
+      position: absolute;
+      top: 1%;
+      right: 5%;
+      color: #978787;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .left-panel h2 {
+      font-size: 24px;
+      margin: 0 0 20px;
+      color: #333;
+    }
+
+    .left-panel label {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .staion-name {
+      color: #333;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .left-panel input[type="text"],
+    .left-panel input[type="date"],
+    .left-panel input[type="time"] {
+      width: 90%;
+      padding: 5px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      color: #333;
+      font-size: 16px;
+      font-family: auto;
+    }
+
+    .left-panel input[type="text"]:focus,
+    .left-panel input[type="date"]:focus,
+    .left-panel input[type="time"]:focus {
+      transition: border linear 0.2s, box-shadow linear 0.5s;
+      outline: none;
+      border-color: #fff;
+      box-shadow: 0 0 8px #89b8e8;
+    }
+
+    .left-panel input[type="submit"] {
+      padding: 10px;
+      font-size: 18px;
+      background-color: #40b5e5;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    form {
+      font-weight: bold;
+    }
+
+    #tip {
+      font-weight: lighter;
+      margin: 0;
+      color: #333;
+    }
+
+    main {
+      margin-top: 100px;
+      border-bottom: 0px;
+    }
+
+    #fore-weather {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+    color: #333;
+    }
+    /* 右侧 */
+    .right-panel {
+      width: 75%;
+      height: calc(120vh - 310px);
+      display: inline-block
+    }
+
+    #map {
+      height: 100%;
+    }
+
+    /* .gm-style-iw {
+      height: 800px;
+      width: 700px;
+    } */
+
+    #clicked-name {
+      text-align: center;
+      height: 20px;
+      font-size: 16px;
+    }
+
+    .station-name {
+      font-weight: bold;
+    }
+
+    .chart-container {
+      width: 75%;
+      float: right;
+      height: 160px;
+      display: flex;
+      padding: 10px 0;
+      flex-direction: row;
+      justify-content: space-between;
+      visibility: hidden;
+      z-index: 1;
+    }
+
+    .chart-container .card {
+      flex: 1;
+      height: 100%;
+      margin-right: 10px;
+      border: 0px;
+      padding: 0px;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .chart-container .card:first-child {
+      margin-left: 10px;
+    }
+
+    .chart-container .card:last-child {
+      margin-right: 1px;
+    }
+
+    #hourly-chart {
+      width: 100%;
+      height: 100%;
+    }
+
+    #daily-chart {
+      width: 100%;
+      height: 100%;
+    }
+
+    #prediction-chart {
+      width: 100%;
+      height: 100%;
+    }
+
+    #dep-charts {
+      margin-top: 10px;
+    }
+
+    #des-charts {
+      margin-top: 10px;
+    }
+
+    #dep-chart-1 {
+      margin-bottom: 5px;
+    }
+    
+    #des-chart-1 {
+      margin-bottom: 5px;
+    }
+
+    /* 底部 */
+    footer {
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+      background-color: #1c2127;
+    }
+
+    footer p {
+      margin: 0;
+      font-size: 18px;
+      color: #fff;
+    }
+
+    footer a {
+      color: #333;
+      text-decoration: none;
+    }
+
+    .icon-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .icon-day {
+      font-size: 18px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .icon-temp {
+      font-size: 14px;
+    }
+
+    .icon-row img {
+      width: 50px;
+      height: 50px;
+      display: inline-block;
+    }
+
+    .location-button {
+      background-color: white;
+      height: 40px;
+      width: 300px;
+      margin: 10px;
+      border: none;
+      font-weight: bold;
+    }
     </style>
     <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxd5Xu1D8hX1VLr4WHwOKoVqzfLZzM9Mo"></script>
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
@@ -270,6 +315,12 @@
     <header>
       <div class="center">
         <h1>Dublin Bikes</h1>
+        <!-- <img
+          src="//file.pngsucai.com/file1/00/21/34/pngsucai_2134153_e13494.png?auth_key=1681985372-0-0-299dbe0420506d951b3ec7dc41036780"
+          alt="" style="width: 7%; padding-right: 15px;"> -->
+        <!-- <img
+          src="https://see.fontimg.com/api/renderfont4/GOBOy/eyJyIjoiZnMiLCJoIjo0NiwidyI6MTI1MCwiZnMiOjM3LCJmZ2MiOiIjMUUzQ0ExIiwiYmdjIjoiIzA2MUYzMiIsInQiOjF9/RHVibGluIEJpa2Vz/dear-raina.png"
+          alt="Dublin Bikes"> -->
       </div>
       <div id="current-weather"></div>
       </div>
@@ -294,19 +345,20 @@
           <label for="date">Departure time:</label>
           <input type="date" id="date" name="date" />
           <input type="time" id="time" name="time" />
+          <p id="tip">(Departure time should be within 48 hours)</p>
           <br />
         </form>
         <input type="submit" value="Submit" id="submit" />
         <div id="fore-weather"></div>
       </div>
       <div class="right-panel">
-        <div id="map"></div>
+        <div id="map" style="margin-right: 20px;"></div>
         <!-- 站点信息 -->
         <div id="station-info">
-          <h2 id="station-name">Station Information</h2>
+          <h2 id="station-header">Station Information</h2>
           <span class="close">x</span>
           <div id="dep-info">
-            <p id="dep-name"></p>
+            <p class="station-name" id="dep-name"></p>
             <div id="dep-words"></div>
             <div id="dep-charts">
               <div id="dep-chart-1"></div>
@@ -314,7 +366,7 @@
             </div>
           </div>
           <div id="des-info">
-            <p id="des-name"></p>
+            <p class="station-name" id="des-name"></p>
             <div id="des-words"></div>
             <div id="des-charts">
               <div id="des-chart-1"></div>
@@ -381,6 +433,10 @@
           
           var depStationId = stationsDict[depStationName]; 
           var desStationId = stationsDict[desStationName];
+          
+          if (!depStationId || !desStationId){
+            alert("Please check your input carefully.")
+          } else {
           var travelTime = new Date(travelDateString + "T"+travelTimeString);
           var travelHour = travelTime.getHours();
           
@@ -395,11 +451,11 @@
             const timeDiff = Math.abs(travelTime.getTime() - new Date().getTime());
             const hoursDiff = Math.floor(timeDiff / (1000*60*60));
             
-            let depName = depStationName.toUpperCase() + ": ";
+            let depName = depStationName.toUpperCase();
             const depNameDiv = document.getElementById("dep-name");
             depNameDiv.innerHTML = depName;
             depData = data.find(item => item.name === depStationName.toUpperCase());
-            let desName = desStationName.toUpperCase() + ": ";
+            let desName = desStationName.toUpperCase();
             const desNameDiv = document.getElementById("des-name");
             desNameDiv.innerHTML = desName;
             desData = data.find(item => item.name === desStationName.toUpperCase());
@@ -439,7 +495,7 @@
               drawHourlyChart(desStationId,"des-chart-1");
               drawDailyChart(desStationId,"des-chart-2");
 
-            } else if (hoursDiff < 48){
+            } else if (0 < hoursDiff < 48){
               fetch("/prediction/" + depStationId + "/" + travelDay + "/" + travelHour).then(response => {
               console.log(response);
               return response.json();
@@ -475,12 +531,11 @@
               
             } else{
               alert("Please check your input carefully.");
-            }
+            }}
         });
         // event.preventDefault();
       });
     }
-
       function drawHourlyChart(station_id,location) {
         fetch("/hourly/" + station_id)
           .then((response) => {
@@ -508,7 +563,7 @@
               },
               vAxis: { title: "Available Bike Number" },
               legend: "none",
-              width: "350",
+              width: "330",
             };
             var hourlyChart = new google.visualization.LineChart(
               document.getElementById(location)
@@ -542,7 +597,7 @@
                       },
               vAxis: { title: "Available Bike Number" },
               legend: "none",
-              width: "350",
+              width: "330",
             };
             var dailyChart = new google.visualization.LineChart(
               document.getElementById(location)
@@ -635,7 +690,7 @@
               hAxis: { title: "Future Hours" },
               vAxis: { title: "Available Bike Number" },
               legend: "none",
-              width: "350",
+              width: "330",
             };
             var predictionChart = new google.visualization.LineChart(
               document.getElementById(location)
@@ -696,6 +751,32 @@
           zoom: 13,
         });
 
+        let geolocation = new google.maps.InfoWindow();
+        const currLocButton = document.createElement("button");
+        currLocButton.type = "button";
+        currLocButton.textContent = "Get Your Current Location";
+        currLocButton.classList.add("location-button");
+        map.controls[google.maps.ControlPosition.TOP_CENTER].push(currLocButton);
+        currLocButton.addEventListener('click',()=>{
+          if (navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(
+              (position)=>{
+                const currLoc = {
+                  lat:position.coords.latitude,
+                  lng:position.coords.longitude,
+                };
+                geolocation.setPosition(currLoc);
+                geolocation.setContent("You are Here. Find bike stations near you!");
+                geolocation.open(map);
+                map.setCenter(currLoc);
+              }, ()=>{
+                locationErrorHandling(true, geolocation, map.getCenter());
+              }
+            );
+          }else{
+            locationErrorHandling(false,geolocation,map.getCenter());
+          }
+        });
         Object.values(stations).forEach((station) => {
           const color =
             (station.available_bikes /
@@ -753,7 +834,15 @@
             stationNameDiv.innerHTML = stationName;
 
           });
+
         });
+      }
+      function locationErrorHandling(hasGeolocation, geolocation, position){
+        geolocation.setPosition(position);
+        geolocation.setContent(
+          hasGeolocation? "Error: Geolocation failed.":"Error: Oops...Your browser does not support geolocation."
+        );
+        geolocation.open(map);
       }
 
       function displayCurrentWeather() {
@@ -764,8 +853,9 @@
           })
           .then((data) => {
             const currentTemp = `
-                  <p style="display: inline-block; margin-right: 10px;">${Math.round(data["temp"] - 273.15)}°C</p>
-                  <img style="display: inline-block;" src = "${iconGenerator(data["weather"][0]["icon"])}">
+                 <img style="display: inline-block; width: 40%" src = "${iconGenerator(data["weather"][0]["icon"])}">
+                  <div class="icon-day" style="display: inline-block; margin: 0; color: #333;">Now</div>
+                  <p style="display: inline-block; margin-right: 10px; margin: 0; color: #333;">${Math.round(data["temp"] - 273.15)}°C</p>
                   `;
             const currentTempDiv = document.getElementById("current-weather");
             currentTempDiv.innerHTML = currentTemp;
@@ -780,7 +870,7 @@
             return response.json();
           })
           .then((data) => {
-            let foreWeather = ` `;
+            let foreWeather = `<div id="weather-forecast">Weather Forcast</div>`;
             // <p>Temparature:${Math.round(data[1]['temp']['day']-273.15)}°C</p>
             //<img src = "${iconGenerator(data[1]['weather'][0]['icon'])}">
             var i = 0;
@@ -795,6 +885,7 @@
                 day = "Today";
               }
               foreWeather += `
+              
               <div class="icon-column">
                 <img style="display: inline-block; width:20%" src="${iconGenerator(foreData["weather"][0]["icon"])}">
               <div class="icon-day" style="display: inline-block;">${day}</div>
