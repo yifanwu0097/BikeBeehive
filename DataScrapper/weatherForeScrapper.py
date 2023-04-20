@@ -7,17 +7,13 @@ import datetime as dt
 # Weather API keys
 WEATHER_APIKEY = "f0d90ef7fcc8781efadf746287963079"
 WEATHER_URI = "https://api.openweathermap.org/data/3.0/onecall?lat=53.3498&lon=-6.2603&exclude=minutely,hourly,alerts"
-WEATHER_FORE_URI = "https://api.openweathermap.org/data/2.5/onecall?"
-
+WEATHER_FORE_URI = "https://api.openweathermap.org/data/2.5/forcast?lat=53.3498&lon=-6.260"
 
 def weatherForeScrapper():
     # DYNAMIC DATA
     # Test the input position to get the weather forecast
-    lat = input("Input the latitude: ")
-    lon = input("Input the longitude: ")
 
-    r_wf = requests.get(WEATHER_FORE_URI + "lat=" + lat + "&lon=" + lon
-         + "&exclude=current,minutely,alerts" + "&appid=" + WEATHER_APIKEY)
+    r_wf = requests.get(WEATHER_FORE_URI + "&exclude=current,minutely,alerts" + "&appid=" + WEATHER_APIKEY)
 
     # Populate json weather data into database
     f_w = json.loads(r_wf.text)
@@ -53,9 +49,12 @@ def weatherForeScrapper():
                float(f_w["daily"][0]["pop"]),
                float(f_w["daily"][0]["uvi"])
                )
+    print(cwfvals)
 
     # Populate weather forecast data into database
-    weatherforecastsql = """INSERT INTO db_bikes.future_weather_forecast 
-                            VALUES(%f,%f,"%s",%f,%f,%i,%i,%f,%f,%i,%i,%f,%i,%f,"%s",%f,"%s","%s","%s",%f,%f,%i,%i,%f,%f,%i,%f,"%s",%i,%f,%f);"""% cwfvals
+    weatherforecastsql = """INSERT INTO dbbikes.future_weather_forecast 
+                            # VALUES(%f,%f,"%s",%f,%f,%i,%i,%f,%f,%i,%i,%f,%i,%f,"%s",%f,"%s","%s","%s",%f,%f,%i,%i,%f,%f,%i,%f,"%s",%i,%f,%f);"""% cwfvals
     cursor.execute(weatherforecastsql)
     connection.commit()
+
+
