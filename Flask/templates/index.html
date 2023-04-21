@@ -162,7 +162,7 @@
     #fore-weather {
     font-size: 18px;
     font-weight: bold;
-    margin-top: 20px;
+    margin: 20px 0;
     color: #333;
     }
     /* 右侧 */
@@ -315,12 +315,6 @@
     <header>
       <div class="center">
         <h1>Dublin Bikes</h1>
-        <!-- <img
-          src="//file.pngsucai.com/file1/00/21/34/pngsucai_2134153_e13494.png?auth_key=1681985372-0-0-299dbe0420506d951b3ec7dc41036780"
-          alt="" style="width: 7%; padding-right: 15px;"> -->
-        <!-- <img
-          src="https://see.fontimg.com/api/renderfont4/GOBOy/eyJyIjoiZnMiLCJoIjo0NiwidyI6MTI1MCwiZnMiOjM3LCJmZ2MiOiIjMUUzQ0ExIiwiYmdjIjoiIzA2MUYzMiIsInQiOjF9/RHVibGluIEJpa2Vz/dear-raina.png"
-          alt="Dublin Bikes"> -->
       </div>
       <div id="current-weather"></div>
       </div>
@@ -441,10 +435,7 @@
           var travelHour = travelTime.getHours();
           
           var travelDay = travelTime.getDay();
-          console.log(typeof(travelDay));
-          console.log(typeof(travelHour));
-          console.log(typeof(depStationId));
-          
+        
           //const submitBotton = document.getElementById('submit');
 
           //submitBotton.addEventListener('click',()=>{
@@ -610,7 +601,6 @@
       function getPrediction(station_id, day_num, future_hour) {
       fetch("/prediction/" + station_id + "/" + day_num + "/" + future_hour).then(response => {
         console.log(response);
-        console.log("fetch success!");
         return response.json();
       }).then(data => {
         return Math.floor(data[0]);
@@ -708,7 +698,6 @@
         })
         .then((data) => {
           window.stations = data;
-          console.log(stations);
         })
         .catch((error) => console.error(error));
 
@@ -716,18 +705,14 @@
       var jqxhr = $.getJSON(
         "/stations",
         function (stations) {
-          console.log("success one", stations);
           initMap(stations);
         }
       )
         .done(function () {
-          console.log("second success");
         })
         .fail(function () {
-          console.log("error");
         })
         .always(function () {
-          console.log("complete");
         });
 
       // window.onload = function () {
