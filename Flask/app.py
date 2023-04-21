@@ -201,7 +201,7 @@ def get_predictions(station_id):
         current_day = 0
     
 
-    with open('/home/ec2-user/Dublin-Bikes-App/MachineLearning/model_{}.pkl'.format(station_id),'rb') as handle:
+    with open('MachineLearning/model_{}.pkl'.format(station_id),'rb') as handle:
         model = pickle.load(handle)
         features = ['weekday_Sunday','weekday_Monday','weekday_Tuesday','weekday_Wednesday','weekday_Thursday','weekday_Friday','weekday_Saturday','hour','temp','clouds','wind_speed','pressure','humidity']
         
@@ -216,12 +216,29 @@ def get_predictions(station_id):
             input[features.index('wind_speed')] = hourly_forecast['wind_speed']
             input[features.index('pressure')] = hourly_forecast['pressure']
             input[features.index('humidity')] = hourly_forecast['humidity']
-            if i < 24 - current_hour:
-                input[features.index(weekdays[current_day])] = 1
-            elif 24 - current_hour <= i < 48 - current_hour:
-                input[features.index(weekdays[current_day+1])] = 1
-            else:
-                input[features.index(weekdays[current_day+2])] = 1
+            if current_day < 5:
+                if i < 24 - current_hour:
+                    input[features.index(weekdays[current_day])] = 1
+                elif 24 - current_hour <= i < 48 - current_hour:
+                    input[features.index(weekdays[current_day+1])] = 1
+                else:
+                    input[features.index(weekdays[current_day+2])] = 1
+                
+            elif current_day == 5:
+                if i < 24 - current_hour:
+                    input[features.index(weekdays[current_day])] = 1
+                elif 24 - current_hour <= i < 48 - current_hour:
+                    input[features.index(weekdays[current_day+1])] = 1
+                else:
+                    input[features.index(weekdays[0])] = 1
+                
+            elif current_day == 6:
+                if i < 24 - current_hour:
+                    input[features.index(weekdays[current_day])] = 1
+                elif 24 - current_hour <= i < 48 - current_hour:
+                    input[features.index(weekdays[0])] = 1
+                else:
+                    input[features.index(weekdays[1])] = 1
             prediction = model.predict([input])
             predictions.append(list(prediction)[0])
             i += 1
