@@ -1,5 +1,4 @@
 import json
-import pymysql.cursors
 from createdbtable import cursor, connection
 
 
