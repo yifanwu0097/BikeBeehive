@@ -1,11 +1,7 @@
-from flask import Flask, jsonify, render_template, url_for
-from flask_sqlalchemy import SQLAlchemy
-# from flask_caching import Cache
+from flask import Flask, jsonify, render_template
 import pymysql.cursors
 import requests
-import json
 import pickle
-import pandas as pd
 import datetime as dt
 
 URI = "database-test1.ckvmcnbipeqn.eu-west-1.rds.amazonaws.com"
@@ -15,36 +11,17 @@ USER = "picto"
 PASSWORD = "Comp30830"
 
 WEATHER_URI = "https://api.openweathermap.org/data/3.0/onecall?lat=53.3498&lon=-6.2603&exclude=minutely,alerts&appid=f0d90ef7fcc8781efadf746287963079"
-# conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
 
 app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://picto:Comp30830@database-test1.ckvmcnbipeqn.eu-west-1.rds.amazonaws.com:3306/dbbikes"
-app.config['CACHE_TYPE'] = 'simple'
-app.config['CACHE_DEFAULT_TIMEOUT'] = 300
-
-# db = SQLAlchemy(app)
-# cache = Cache(app)
-
 
 @app.route("/")
-# @cache.cached()
 def index():
     return render_template('index.html')
 
-# Display all stations info
-
-
 @app.route("/stations")
-# @cache.cached()
 def stations():
     conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
     with conn.cursor() as cursor:
-        # select and show all of the stations without showing its occupancy
-        # sql_static = """
-
-        #     """
-        # cursor.execute(sql_static)
-
         sql = """
             SELECT d.number, d.name, d.address, d.position_lat, d.position_lng, d.banking, d.status, a.available_bikes, a.available_bike_stands, a.last_update
             FROM (
@@ -63,34 +40,7 @@ def stations():
     conn.close()
     return jsonify(stations_data)
 
-
-# Display selected station's availability
-
-# TODO: is this route necessary?
-@app.route("/availability/<int:station_id>")
-# @cache.cached()
-def get_availability():
-    conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
-    with conn.cursor() as cursor:
-        sql = """
-            SELECT s.name, a.last_update, a.available_bikes, a.available_bike_stands
-            FROM db_bikes.station_info as s
-            JOIN db_bikes.station_new_availability as a
-            ON s.number = a.number
-            WHERE s.number = {station_number}
-            AND (a.number, a.last_update) 
-                        IN (SELECT number, MAX(last_update) FROM db_bikes.station_new_availability 
-                        GROUP BY number)
-            GROUP BY s.name, a.last_update
-            ORDER BY s.name, a.last_update desc;
-        """
-        cursor.execute(sql)
-        availability_data = cursor.fetchall()
-    conn.close()
-    return json.dumps(availability_data)
-
 @app.route("/hourly/<int:station_id>")
-# @cache.cached()
 def get_hourly_availability(station_id):
     conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
     with conn.cursor() as cursor:
@@ -109,7 +59,6 @@ def get_hourly_availability(station_id):
 
 
 @app.route("/daily/<int:station_id>")
-# @cache.cached()
 def get_daily_availability(station_id):
     conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
     with conn.cursor() as cursor:
@@ -126,16 +75,17 @@ def get_daily_availability(station_id):
     conn.close()
     return jsonify(daily_availability_data)
 
-# day_num starts from Sun
+
 @app.route("/prediction/<int:station_id>/<int:day_num>/<int:future_hour>")
 def get_prediction(station_id, day_num, future_hour):
+    # day_num starts from Sun
     weekdays = ['weekday_Sunday','weekday_Monday','weekday_Tuesday','weekday_Wednesday','weekday_Thursday','weekday_Friday','weekday_Saturday']
     current_hour = dt.datetime.now().hour
     if current_hour <= future_hour:
         index = future_hour - current_hour
     else:
         index = 24 - current_hour + future_hour
-    with open('/home/ec2-user/Dublin-Bikes-App/MachineLearning/model_{}.pkl'.format(station_id),'rb') as handle:
+    with open('MachineLearning/model_{}.pkl'.format(station_id),'rb') as handle:
         model = pickle.load(handle)
         features = ['weekday_Sunday','weekday_Monday','weekday_Tuesday','weekday_Wednesday','weekday_Thursday','weekday_Friday','weekday_Saturday','hour','temp','clouds','wind_speed','pressure','humidity']
         
@@ -150,28 +100,7 @@ def get_prediction(station_id, day_num, future_hour):
         input[features.index('humidity')] = target_forcast['humidity']
         input[features.index(weekdays[day_num])] = 1
         prediction = model.predict([input])
-        print(prediction)
     return list(prediction)
-
-
-
-# TODO: not necessary
-@app.route("/old_weather")
-# @cache.cached()
-def old_current_weather():
-    conn = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
-    with conn.cursor() as cursor:
-        sql = """
-        SELECT (temp - 273.15) as celsius_temp, (feels_like - 273.15) as celsius_feels_like, weather_description, (temp_min - 273.15) as celsius_temp_min, (temp_max - 273.15) as celsius_temp_max
-        FROM db_bikes.dublin_new_weather 
-        ORDER BY dt DESC
-        LIMIT 1;
-        """
-        cursor.execute(sql)
-        current_weather = cursor.fetchall()
-        print(current_weather)
-
-    return jsonify(current_weather)
 
 @app.route("/weather")
 def current_weather():
@@ -189,7 +118,6 @@ def weather_daily_forecast():
 def weather_hourly_forecast():
     response = requests.get(WEATHER_URI).json()
     hourly_forecast = response['hourly']
-    print(hourly_forecast)
     return hourly_forecast
 
 @app.route("/predictions/<int:station_id>")
@@ -199,12 +127,9 @@ def get_predictions(station_id):
     current_day = dt.datetime.now().weekday() + 1 
     if current_day == 7:
         current_day = 0
-    
-
     with open('MachineLearning/model_{}.pkl'.format(station_id),'rb') as handle:
         model = pickle.load(handle)
         features = ['weekday_Sunday','weekday_Monday','weekday_Tuesday','weekday_Wednesday','weekday_Thursday','weekday_Friday','weekday_Saturday','hour','temp','clouds','wind_speed','pressure','humidity']
-        
         hourly_forecasts = weather_hourly_forecast()
         i = 1
         predictions = []
@@ -216,6 +141,7 @@ def get_predictions(station_id):
             input[features.index('wind_speed')] = hourly_forecast['wind_speed']
             input[features.index('pressure')] = hourly_forecast['pressure']
             input[features.index('humidity')] = hourly_forecast['humidity']
+            
             if current_day < 5:
                 if i < 24 - current_hour:
                     input[features.index(weekdays[current_day])] = 1
@@ -223,7 +149,6 @@ def get_predictions(station_id):
                     input[features.index(weekdays[current_day+1])] = 1
                 else:
                     input[features.index(weekdays[current_day+2])] = 1
-                
             elif current_day == 5:
                 if i < 24 - current_hour:
                     input[features.index(weekdays[current_day])] = 1
@@ -231,7 +156,6 @@ def get_predictions(station_id):
                     input[features.index(weekdays[current_day+1])] = 1
                 else:
                     input[features.index(weekdays[0])] = 1
-                
             elif current_day == 6:
                 if i < 24 - current_hour:
                     input[features.index(weekdays[current_day])] = 1
@@ -242,7 +166,6 @@ def get_predictions(station_id):
             prediction = model.predict([input])
             predictions.append(list(prediction)[0])
             i += 1
-        print(prediction)
     return predictions
 
 if __name__ == "__main__":
