@@ -9,7 +9,7 @@ PASSWORD = "Comp30830"
 connection = pymysql.connect(host=URI, user=USER, password=PASSWORD, port=PORT, database=DB)
 cursor = connection.cursor()
 
-# Create the database dbbikes1
+# Create the database db_bikes
 sql = """
 CREATE DATABASE IF NOT EXISTS db_bikes;
 """
