@@ -1,7 +1,6 @@
 import requests
 import json
 import time
-import pymysql.cursors
 from createdbtable import cursor, connection
 import datetime as dt
 
