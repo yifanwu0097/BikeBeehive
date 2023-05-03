@@ -2,7 +2,6 @@ import requests
 import json
 import time
 import datetime as dt
-import pymysql.cursors
 from createdbtable import cursor, connection
 
 # Station API keys
