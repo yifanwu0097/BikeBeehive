@@ -1,12 +1,10 @@
 import traceback
-from staticStation import staticStation
 from stationScrapper import stationScrapper
 
 # run once
 #staticStation()
 
 # run forever...
-
 while True:
     try:
         stationScrapper()
