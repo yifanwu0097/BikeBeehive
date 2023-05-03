@@ -23,26 +23,28 @@
     </header>
 
     <main>
+      <!-- left panel -->
       <div class="left-panel">
         <form>
           <label for="start-station">Departure station:</label>
-          <input type="text" id="start-station" name="start-station" />
-          <br />
+          <input type="text" id="start-station" name="start-station"/>
+          <br/>
           <label for="end-station">Destination station:</label>
-          <input type="text" id="end-station" name="end-station" />
-          <br />
+          <input type="text" id="end-station" name="end-station"/>
+          <br/>
           <label for="date">Departure time:</label>
-          <input type="date" id="date" name="date" />
-          <input type="time" id="time" name="time" />
+          <input type="date" id="date" name="date"/>
+          <input type="time" id="time" name="time"/>
           <p id="tip">(Departure time should be within 48 hours)</p>
-          <br />
+          <br/>
         </form>
-        <input type="submit" value="Submit" id="submit" />
+        <input type="submit" value="Submit" id="submit"/>
         <div id="fore-weather"></div>
       </div>
+      <!-- right panel -->
       <div class="right-panel">
         <div id="map" style="margin-right: 20px;"></div>
-        <!-- Station info -->
+        <!-- station info -->
         <div id="station-info">
           <h2 id="station-header">Station Information</h2>
           <span class="close">x</span>
@@ -64,24 +66,24 @@
           </div>
         </div>
       </div>
-    </main>
-    <!-- chart -->
-    <div>
-      <div id="clicked-name"></div>
-      <div class="chart-container">
-        <div class="card">
-          <div id="hourly-chart"></div>
-        </div>
-        <div class="card">
-          <div id="daily-chart"></div>
-        </div>
-        <div class="card">
-          <div id="prediction-chart"></div>
+      <!-- chart -->
+      <div>
+        <div id="clicked-name"></div>
+        <div class="chart-container">
+          <div class="card">
+            <div id="hourly-chart"></div>
+          </div>
+          <div class="card">
+            <div id="daily-chart"></div>
+          </div>
+          <div class="card">
+            <div id="prediction-chart"></div>
+          </div>
         </div>
       </div>
-    </div>
-    <div style="clear: both"></div>
-
+      <div style="clear: both"></div>
+    </main>
+  
     <footer>
       <p>&copy; 2023 Dublin Bike Station. All rights reserved.</p>
     </footer>
