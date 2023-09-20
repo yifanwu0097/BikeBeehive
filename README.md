@@ -1,8 +1,4 @@
-# Dublin Bikes Web Application
-## Team members
-- Yifan Wu: https://github.com/yifanwu0097
-- Yuanjun Du: https://github.com/yuanjundu
-- Shanie Wang: https://github.com/kylinwang318
+## BikeBeehive
 ## Description
 This web application displays real-time availability data for all Dublin Bikes stations.Additionally, the application can predict the availability level for each station at a given future time point. With this information, users can easily plan their bike rides and make informed decisions about which stations to use.
 ## User Guide
